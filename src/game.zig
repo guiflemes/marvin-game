@@ -70,6 +70,7 @@ pub const GameRunner = struct {
     }
 
     pub fn update(self: *GameRunner) void {
+        //TODO remove switch, each state, set the next on, use ecs...
         var exploring = state.Explore.init(&self.registry);
         switch (self.current_state) {
             .Exploring => exploring.state().update(),
