@@ -41,11 +41,18 @@ pub fn build(b: *std.Build) void {
         .target = target,
     });
 
+    // raylib
     const raylib_dep = b.dependency("raylib_zig", .{ .target = target, .optimize = optimize, .linux_display_backend = .X11 });
-
     const raylib = raylib_dep.module("raylib"); // main raylib module
     const raygui = raylib_dep.module("raygui"); // raygui module
     const raylib_artifact = raylib_dep.artifact("raylib"); // raylib C library
+
+    // ecs
+    const ecs_dep = b.dependency("entt", .{
+        .target = target,
+        .optimize = optimize,
+    });
+    const ecs_mod = ecs_dep.module("zig-ecs");
 
     // Here we define an executable. An executable needs to have a root module
     // which needs to expose a `main` function. While we could add a main function
@@ -92,6 +99,11 @@ pub fn build(b: *std.Build) void {
     exe.linkLibrary(raylib_artifact);
     exe.root_module.addImport("raylib", raylib);
     exe.root_module.addImport("raygui", raygui);
+    exe.root_module.addImport("ecs", ecs_mod);
+
+    // exe.addPackagePath("ecs", b.dependency("zig-ecs", .{
+    //     .url = "git+https://github.com/prime31/zig-ecs.git",
+    // }));
 
     // This declares intent for the executable to be installed into the
     // install prefix when running `zig build` (i.e. when executing the default

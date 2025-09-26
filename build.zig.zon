@@ -36,6 +36,10 @@
             .url = "git+https://github.com/raylib-zig/raylib-zig?ref=devel#d64fc43f38949231dc7d6f1c016db8fcae858b8c",
             .hash = "raylib_zig-5.6.0-dev-KE8REDc2BQCri1t11guC1tZA-Luc7NuVeml_59LSELLe",
         },
+        .entt = .{
+            .url = "git+https://github.com/prime31/zig-ecs.git#dbf3647c2cc4f327fe87067e40f8436c7f87f209",
+            .hash = "entt-1.0.0-qJPtbNLVAgDPXaUbyRSsBTK75Cr1WujUA92kToJugWry",
+        },
     },
     .paths = .{
         "build.zig",

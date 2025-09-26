@@ -5,6 +5,8 @@ const map = @import("map.zig");
 const font = @import("font.zig");
 const Allocator = std.mem.Allocator;
 const ArenaAllocator = std.heap.ArenaAllocator;
+const ecs = @import("ecs");
+const state = @import("state.zig");
 
 pub const Renderer = struct {
     pub fn init() Renderer {
@@ -23,61 +25,39 @@ pub const Renderer = struct {
     }
 };
 
-pub const GameLogic = struct {
-    player: *player.Player,
-    map: *map.Map,
-
-    pub fn init(p: *player.Player, m: *map.Map) GameLogic {
-        return GameLogic{ .player = p, .map = m };
-    }
-
-    pub fn update(self: *GameLogic) void {
-        if (rl.isKeyPressed(rl.KeyboardKey.right) and !self.map.isObstacle(self.player.y, self.player.x + 1)) {
-            self.player.x += 1;
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.left) and !self.map.isObstacle(self.player.y, self.player.x - 1)) {
-            self.player.x -= 1;
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.down) and !self.map.isObstacle(self.player.y + 1, self.player.x)) {
-            self.player.y += 1;
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.up) and !self.map.isObstacle(self.player.y - 1, self.player.x)) {
-            self.player.y -= 1;
-        }
-    }
+pub const GameState = enum {
+    Exploring,
+    Battle,
 };
 
 pub const GameRunner = struct {
     renderer: Renderer,
-    logic: GameLogic,
-    game: Game,
-    arena: ArenaAllocator,
-    orig_allocator: Allocator,
+    allocator: Allocator,
+    registry: ecs.Registry,
+    current_state: GameState,
 
-    pub fn init(allocator: Allocator) !GameRunner {
-        const arena = ArenaAllocator.init(allocator);
+    pub fn init(allocator: Allocator) *GameRunner {
+        var runner = allocator.create(GameRunner) catch @panic("Could not allocate GameRunner");
+
         const defaultFont = font.Font.init();
+        const p = player.Player.init(defaultFont);
+        const m = map.Map.init(defaultFont);
 
-        const p = try allocator.create(player.Player);
-        p.* = player.Player.init(defaultFont);
-        const m = try allocator.create(map.Map);
-        m.* = map.Map.init(defaultFont);
-        const game = Game.init(p, m);
-
-        return GameRunner{
+        runner.* = GameRunner{
             .renderer = Renderer.init(),
-            .logic = GameLogic.init(p, m),
-            .game = game,
-            .arena = arena,
-            .orig_allocator = allocator,
+            .allocator = allocator,
+            .registry = ecs.Registry.init(allocator),
+            .current_state = GameState.Exploring,
         };
+
+        runner.registry.singletons().add(p);
+        runner.registry.singletons().add(m);
+
+        return runner;
     }
 
     pub fn deinit(self: *GameRunner) void {
-        self.arena.deinit();
+        self.registry.deinit();
     }
 
     pub fn startUp(self: *GameRunner) void {
@@ -90,25 +70,26 @@ pub const GameRunner = struct {
     }
 
     pub fn update(self: *GameRunner) void {
-        self.logic.update();
+        var exploring = state.Explore.init(&self.registry);
+        switch (self.current_state) {
+            .Exploring => exploring.state().update(),
+            .Battle => self.battleUpdate(),
+        }
+    }
+
+    pub fn battleUpdate(self: *GameRunner) void {
+        _ = self;
     }
 
     pub fn draw(self: *GameRunner) void {
         self.renderer.drawFrame();
         defer self.renderer.endDrawing();
 
-        // TODO pass a interface rendereble
         const origin = rl.Vector2{ .x = 0, .y = 0 };
-        self.game.map.draw(origin);
-        self.game.player.draw(origin);
-    }
-};
+        var m = self.registry.singletons().get(map.Map);
+        var p = self.registry.singletons().get(player.Player);
 
-pub const Game = struct {
-    player: *player.Player,
-    map: *map.Map,
-
-    pub fn init(p: *player.Player, m: *map.Map) Game {
-        return Game{ .player = p, .map = m };
+        m.draw(origin);
+        p.draw(origin);
     }
 };
