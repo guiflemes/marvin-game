@@ -53,8 +53,7 @@ pub const GameLogic = struct {
 pub const GameRunner = struct {
     renderer: Renderer,
     logic: GameLogic,
-    player: *player.Player,
-    map: *map.Map,
+    game: Game,
     arena: ArenaAllocator,
     orig_allocator: Allocator,
 
@@ -66,12 +65,12 @@ pub const GameRunner = struct {
         p.* = player.Player.init(defaultFont);
         const m = try allocator.create(map.Map);
         m.* = map.Map.init(defaultFont);
+        const game = Game.init(p, m);
 
         return GameRunner{
             .renderer = Renderer.init(),
             .logic = GameLogic.init(p, m),
-            .player = p,
-            .map = m,
+            .game = game,
             .arena = arena,
             .orig_allocator = allocator,
         };
@@ -100,8 +99,8 @@ pub const GameRunner = struct {
 
         // TODO pass a interface rendereble
         const origin = rl.Vector2{ .x = 0, .y = 0 };
-        self.map.draw(origin);
-        self.player.draw(origin);
+        self.game.map.draw(origin);
+        self.game.player.draw(origin);
     }
 };
 
