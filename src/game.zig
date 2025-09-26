@@ -50,7 +50,7 @@ pub const GameLogic = struct {
     }
 };
 
-pub const Game = struct {
+pub const GameRunner = struct {
     renderer: Renderer,
     logic: GameLogic,
     player: *player.Player,
@@ -58,7 +58,7 @@ pub const Game = struct {
     arena: ArenaAllocator,
     orig_allocator: Allocator,
 
-    pub fn init(allocator: Allocator) !Game {
+    pub fn init(allocator: Allocator) !GameRunner {
         const arena = ArenaAllocator.init(allocator);
         const defaultFont = font.Font.init();
 
@@ -67,7 +67,7 @@ pub const Game = struct {
         const m = try allocator.create(map.Map);
         m.* = map.Map.init(defaultFont);
 
-        return Game{
+        return GameRunner{
             .renderer = Renderer.init(),
             .logic = GameLogic.init(p, m),
             .player = p,
@@ -77,24 +77,24 @@ pub const Game = struct {
         };
     }
 
-    pub fn deinit(self: *Game) void {
+    pub fn deinit(self: *GameRunner) void {
         self.arena.deinit();
     }
 
-    pub fn startUp(self: *Game) void {
+    pub fn startUp(self: *GameRunner) void {
         _ = self;
         rl.initAudioDevice();
     }
 
-    pub fn shutDown(self: *Game) void {
+    pub fn shutDown(self: *GameRunner) void {
         self.deinit();
     }
 
-    pub fn update(self: *Game) void {
+    pub fn update(self: *GameRunner) void {
         self.logic.update();
     }
 
-    pub fn draw(self: *Game) void {
+    pub fn draw(self: *GameRunner) void {
         self.renderer.drawFrame();
         defer self.renderer.endDrawing();
 
@@ -102,5 +102,14 @@ pub const Game = struct {
         const origin = rl.Vector2{ .x = 0, .y = 0 };
         self.map.draw(origin);
         self.player.draw(origin);
+    }
+};
+
+pub const Game = struct {
+    player: *player.Player,
+    map: *map.Map,
+
+    pub fn init(p: *player.Player, m: *map.Map) Game {
+        return Game{ .player = p, .map = m };
     }
 };

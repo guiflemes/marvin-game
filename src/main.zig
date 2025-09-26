@@ -12,7 +12,7 @@ pub fn main() !void {
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
-    var game = try g.Game.init(allocator);
+    var game = try g.GameRunner.init(allocator);
 
     game.startUp();
     defer game.shutDown();
