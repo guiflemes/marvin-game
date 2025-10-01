@@ -1,12 +1,17 @@
 const std = @import("std");
 const rl = @import("raylib");
-const player = @import("player.zig");
+const types = @import("types.zig");
 const map = @import("map.zig");
 const font = @import("font.zig");
 const Allocator = std.mem.Allocator;
 const ArenaAllocator = std.heap.ArenaAllocator;
 const ecs = @import("ecs");
 const state = @import("state.zig");
+const systems = @import("systems.zig");
+
+const consts = @import("const.zig");
+
+const TILE_SIZE = consts.TILE_SIZE;
 
 pub const Renderer = struct {
     pub fn init() Renderer {
@@ -40,8 +45,6 @@ pub const GameRunner = struct {
         var runner = allocator.create(GameRunner) catch @panic("Could not allocate GameRunner");
 
         const defaultFont = font.Font.init();
-        const p = player.Player.init(defaultFont);
-        const m = map.Map.init(defaultFont);
 
         runner.* = GameRunner{
             .renderer = Renderer.init(),
@@ -50,8 +53,19 @@ pub const GameRunner = struct {
             .current_state = GameState.Exploring,
         };
 
-        runner.registry.singletons().add(p);
-        runner.registry.singletons().add(m);
+        const types_entity = runner.registry.create();
+        runner.registry.add(types_entity, types.Position{ .x = 2, .y = 2 });
+        runner.registry.add(types_entity, types.Renderable{
+            .font = defaultFont,
+            .text = "@",
+            .color = rl.Color.yellow,
+        });
+        runner.registry.add(types_entity, types.PlayerTag{});
+
+        runner.registry.singletons().add(map.TileMap{
+            .data = map.MapData,
+            .font = defaultFont,
+        });
 
         return runner;
     }
@@ -70,12 +84,15 @@ pub const GameRunner = struct {
     }
 
     pub fn update(self: *GameRunner) void {
-        //TODO remove switch, each state, set the next on, use ecs...
+        // TODO remove switch, each state, set the next on, use ecs...
         var exploring = state.Explore.init(&self.registry);
         switch (self.current_state) {
             .Exploring => exploring.state().update(),
             .Battle => self.battleUpdate(),
         }
+    }
+    pub fn exploringUpdate(self: *GameRunner) void {
+        _ = self;
     }
 
     pub fn battleUpdate(self: *GameRunner) void {
@@ -87,10 +104,7 @@ pub const GameRunner = struct {
         defer self.renderer.endDrawing();
 
         const origin = rl.Vector2{ .x = 0, .y = 0 };
-        var m = self.registry.singletons().get(map.Map);
-        var p = self.registry.singletons().get(player.Player);
-
-        m.draw(origin);
-        p.draw(origin);
+        systems.MapRenderSystem(&self.registry, origin);
+        systems.PlayerRenderSystem(&self.registry, origin);
     }
 };

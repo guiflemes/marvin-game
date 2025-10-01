@@ -2,10 +2,7 @@ const game = @import("game.zig");
 const rl = @import("raylib");
 const ecs = @import("ecs");
 const m = @import("map.zig");
-const p = @import("player.zig");
-
-const Map = m.Map;
-const Player = p.Player;
+const systems = @import("systems.zig");
 
 pub const Vtable = struct {
     update: *const fn (*anyopaque) void,
@@ -39,33 +36,23 @@ pub const Explore = struct {
         return Explore{ .registry = registry };
     }
 
+    pub fn exit(context: *anyopaque) void {
+        _ = context;
+    }
+
+    pub fn enter(context: *anyopaque) void {
+        _ = context;
+    }
+
     fn update(context: *anyopaque) void {
         const self: *Self = @ptrCast(@alignCast(context));
-
-        var player: *Player = self.registry.singletons().get(Player);
-        var map: *Map = self.registry.singletons().get(Map);
-
-        if (rl.isKeyPressed(rl.KeyboardKey.right) and !map.isObstacle(player.y, player.x + 1)) {
-            player.x += 1;
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.left) and !map.isObstacle(player.y, player.x - 1)) {
-            player.x -= 1;
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.down) and !map.isObstacle(player.y + 1, player.x)) {
-            player.y += 1;
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.up) and !map.isObstacle(player.y - 1, player.x)) {
-            player.y -= 1;
-        }
+        systems.PlayerMovementWorldSystem(self.registry);
     }
 
     pub fn state(self: *Self) State {
         return .{
             .ptr = self,
-            .vtable = &.{ .update = update },
+            .vtable = &.{ .update = update, .enter = enter, .exit = exit },
         };
     }
 };

@@ -1,6 +1,7 @@
 const rl = @import("raylib");
 const consts = @import("const.zig");
 const fonts = @import("font.zig");
+const ecs = @import("ecs");
 
 // 640 pixels
 const MAP_HEIGHT = consts.MAP_HEIGHT;
@@ -30,50 +31,15 @@ pub const MapData: [MAP_HEIGHT][MAP_WIDTH]u8 = .{
     .{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' },
 };
 
-pub const Map = struct {
+pub const TileMap = struct {
+    data: [MAP_HEIGHT][MAP_WIDTH]u8,
     font: fonts.Font,
-    m: [MAP_HEIGHT][MAP_WIDTH]u8 = MapData,
 
-    pub fn init(font: fonts.Font) Map {
-        return Map{ .font = font };
-    }
-
-    pub fn draw(self: *Map, origin: rl.Vector2) void {
-        for (0..MAP_HEIGHT) |y| {
-            for (0..MAP_WIDTH) |x| {
-                const tile = self.m[y][x];
-                const tileColor = self.getTileColor(tile);
-
-                const pos = rl.Vector2{
-                    .x = origin.x + tof32(x) * TILE_SIZE + 8.0,
-                    .y = origin.y + tof32(y) * TILE_SIZE + 6.0,
-                };
-
-                rl.drawTextEx(self.font.raylibFont, rl.textFormat("%c", .{tile}), pos, self.font.size, 0, tileColor);
-            }
-        }
-    }
-
-    pub fn isObstacle(self: *Map, y: f32, x: f32) bool {
+    pub fn isObstacle(self: *TileMap, y: f32, x: f32) bool {
         return self.checkTile('#', @intFromFloat(y), @intFromFloat(x));
     }
 
-    pub fn checkTile(self: *Map, tile: u8, y: usize, x: usize) bool {
-        return self.m[y][x] == tile;
-    }
-
-    pub fn getTileColor(self: *Map, tile: u8) rl.Color {
-        _ = self;
-        switch (tile) {
-            '#' => return rl.Color.gray,
-            '.' => return rl.Color.dark_green,
-            '^' => return rl.Color.brown,
-            '~' => return rl.Color.blue,
-            else => return rl.Color.white,
-        }
+    pub fn checkTile(self: *TileMap, tile: u8, y: usize, x: usize) bool {
+        return self.data[y][x] == tile;
     }
 };
-
-pub fn tof32(n: usize) f32 {
-    return @as(f32, @floatFromInt(n));
-}
