@@ -51,19 +51,19 @@ pub fn PlayerMovementWorldSystem(registry: *ecs.Registry) void {
     while (iter.next()) |e| {
         var player = view.get(Position, e);
         if (rl.isKeyPressed(rl.KeyboardKey.right) and !map.isObstacle(player.y, player.x + 1)) {
-            player.x += 1;
+            player.right(1);
         }
 
         if (rl.isKeyPressed(rl.KeyboardKey.left) and !map.isObstacle(player.y, player.x - 1)) {
-            player.x -= 1;
+            player.left(1);
         }
 
         if (rl.isKeyPressed(rl.KeyboardKey.down) and !map.isObstacle(player.y + 1, player.x)) {
-            player.y += 1;
+            player.down(1);
         }
 
         if (rl.isKeyPressed(rl.KeyboardKey.up) and !map.isObstacle(player.y - 1, player.x)) {
-            player.y -= 1;
+            player.right(1);
         }
     }
 }

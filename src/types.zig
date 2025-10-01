@@ -8,6 +8,22 @@ pub const PlayerTag = struct {};
 pub const Position = struct {
     x: f32,
     y: f32,
+
+    pub fn up(self: *Position, step: f32) void {
+        self.y -= step;
+    }
+
+    pub fn down(self: *Position, step: f32) void {
+        self.y += step;
+    }
+
+    pub fn left(self: *Position, step: f32) void {
+        self.x -= step;
+    }
+
+    pub fn right(self: *Position, step: f32) void {
+        self.x += step;
+    }
 };
 
 pub const Renderable = struct {
