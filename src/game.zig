@@ -30,27 +30,19 @@ pub const Renderer = struct {
     }
 };
 
-pub const GameState = enum {
-    Exploring,
-    Battle,
-};
-
 pub const GameRunner = struct {
     renderer: Renderer,
     allocator: Allocator,
     registry: ecs.Registry,
-    current_state: GameState,
 
     pub fn init(allocator: Allocator) *GameRunner {
         var runner = allocator.create(GameRunner) catch @panic("Could not allocate GameRunner");
-
         const defaultFont = font.Font.init();
 
         runner.* = GameRunner{
             .renderer = Renderer.init(),
             .allocator = allocator,
             .registry = ecs.Registry.init(allocator),
-            .current_state = GameState.Exploring,
         };
 
         const types_entity = runner.registry.create();
@@ -66,12 +58,15 @@ pub const GameRunner = struct {
             .data = map.MapData,
             .font = defaultFont,
         });
-
+        var s = state.Explore.create(allocator, &runner.registry) catch @panic("error allocating state");
+        runner.registry.singletons().add(s.state());
         return runner;
     }
 
     pub fn deinit(self: *GameRunner) void {
+        self.registry.singletons().get(state.State).destroy();
         self.registry.deinit();
+        self.allocator.destroy(self);
     }
 
     pub fn startUp(self: *GameRunner) void {
@@ -84,19 +79,13 @@ pub const GameRunner = struct {
     }
 
     pub fn update(self: *GameRunner) void {
-        // TODO remove switch, each state, set the next on, use ecs...
-        var exploring = state.Explore.init(&self.registry);
-        switch (self.current_state) {
-            .Exploring => exploring.state().update(),
-            .Battle => self.battleUpdate(),
-        }
-    }
-    pub fn exploringUpdate(self: *GameRunner) void {
-        _ = self;
+        const currentState = self.registry.singletons().get(state.State);
+        currentState.update();
     }
 
-    pub fn battleUpdate(self: *GameRunner) void {
+    pub fn shouldExit(self: *GameRunner) bool {
         _ = self;
+        return rl.isKeyPressed(rl.KeyboardKey.escape);
     }
 
     pub fn draw(self: *GameRunner) void {

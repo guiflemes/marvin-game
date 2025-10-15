@@ -4,6 +4,8 @@ const fonts = @import("font.zig");
 const ecs = @import("ecs");
 const types = @import("types.zig");
 const m = @import("map.zig");
+const state = @import("state.zig");
+const std = @import("std");
 
 const MAP_HEIGHT = consts.MAP_HEIGHT;
 const MAP_WIDTH = consts.MAP_HEIGHT;
@@ -45,6 +47,8 @@ pub fn MapRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
 
 pub fn PlayerMovementWorldSystem(registry: *ecs.Registry) void {
     var map: *m.TileMap = registry.singletons().get(m.TileMap);
+    // const currentState = registry.singletons().get(state.State);
+    // std.debug.print("currentState: {s}\n", .{currentState.name()});
 
     var view = registry.view(.{ Position, PlayerTag }, .{});
     var iter = view.entityIterator();
@@ -63,7 +67,7 @@ pub fn PlayerMovementWorldSystem(registry: *ecs.Registry) void {
         }
 
         if (rl.isKeyPressed(rl.KeyboardKey.up) and !map.isObstacle(player.y - 1, player.x)) {
-            player.right(1);
+            player.up(1);
         }
     }
 }
