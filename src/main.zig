@@ -31,15 +31,3 @@ pub fn main() !void {
         }
     }
 }
-
-pub fn logLeak(leaked: bool) !void {
-    const leak_file = try std.fs.cwd().createFile("leak.log", .{ .truncate = true });
-    defer leak_file.close();
-
-    var buffer: [1024]u8 = undefined;
-    var writer = leak_file.writer(&buffer);
-
-    try writer.interface.print("Game ended\n", .{});
-    try writer.interface.print("Memory leak detected: {}\n", .{leaked});
-    try writer.interface.flush();
-}

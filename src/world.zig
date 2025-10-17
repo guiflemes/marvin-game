@@ -12,11 +12,6 @@ pub const World = struct {
     registry: *ecs.Registry,
     const Self = @This();
 
-    pub fn init2(registry: *ecs.Registry) World {
-        const allocator = registry.allocator;
-        return .{ .allocator = allocator, .registry = registry };
-    }
-
     pub fn init(registry: *ecs.Registry) *World {
         const allocator = registry.allocator;
         const self = allocator.create(World) catch @panic("error allocating World");
