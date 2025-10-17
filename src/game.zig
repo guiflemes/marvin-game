@@ -1,16 +1,13 @@
 const std = @import("std");
 const rl = @import("raylib");
-const types = @import("types.zig");
-const map = @import("map.zig");
-const font = @import("font.zig");
-const Allocator = std.mem.Allocator;
-const ArenaAllocator = std.heap.ArenaAllocator;
 const ecs = @import("ecs");
-const state = @import("state.zig");
+const state = @import("state_manager.zig");
 const systems = @import("systems.zig");
-
+const world = @import("world.zig");
 const consts = @import("const.zig");
 
+const Allocator = std.mem.Allocator;
+const ArenaAllocator = std.heap.ArenaAllocator;
 const TILE_SIZE = consts.TILE_SIZE;
 
 pub const Renderer = struct {
@@ -34,43 +31,36 @@ pub const GameRunner = struct {
     renderer: Renderer,
     allocator: Allocator,
     registry: ecs.Registry,
+    world: *world.World,
+    state_manager: *state.StateManager,
 
     pub fn init(allocator: Allocator) *GameRunner {
         var runner = allocator.create(GameRunner) catch @panic("Could not allocate GameRunner");
-        const defaultFont = font.Font.init();
 
         runner.* = GameRunner{
             .renderer = Renderer.init(),
             .allocator = allocator,
             .registry = ecs.Registry.init(allocator),
+            .world = undefined,
+            .state_manager = undefined,
         };
 
-        const types_entity = runner.registry.create();
-        runner.registry.add(types_entity, types.Position{ .x = 2, .y = 2 });
-        runner.registry.add(types_entity, types.Renderable{
-            .font = defaultFont,
-            .text = "@",
-            .color = rl.Color.yellow,
-        });
-        runner.registry.add(types_entity, types.PlayerTag{});
-
-        runner.registry.singletons().add(map.TileMap{
-            .data = map.MapData,
-            .font = defaultFont,
-        });
-        var s = state.Explore.create(allocator, &runner.registry) catch @panic("error allocating state");
-        runner.registry.singletons().add(s.state());
+        runner.world = world.World.init(&runner.registry);
+        runner.state_manager = state.StateManager.init(&runner.registry);
         return runner;
     }
 
     pub fn deinit(self: *GameRunner) void {
-        self.registry.singletons().get(state.State).destroy();
+        self.state_manager.destroy();
+        self.world.destroy();
         self.registry.deinit();
+
         self.allocator.destroy(self);
     }
 
     pub fn startUp(self: *GameRunner) void {
-        _ = self;
+        self.state_manager.load();
+        self.world.load();
         rl.initAudioDevice();
     }
 
@@ -79,7 +69,7 @@ pub const GameRunner = struct {
     }
 
     pub fn update(self: *GameRunner) void {
-        const currentState = self.registry.singletons().get(state.State);
+        const currentState = self.state_manager.currentState();
         currentState.update();
     }
 

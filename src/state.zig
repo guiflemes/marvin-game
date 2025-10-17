@@ -62,7 +62,8 @@ pub const Explore = struct {
         systems.PlayerMovementWorldSystem(self.registry);
     }
 
-    pub fn create(allocator: Allocator, registry: *ecs.Registry) !*Self {
+    pub fn create(registry: *ecs.Registry) !*Self {
+        const allocator = registry.allocator;
         const s = try allocator.create(Self);
         s.* = Self.init(allocator, registry);
         return s;
@@ -80,3 +81,8 @@ pub const Explore = struct {
         };
     }
 };
+
+pub fn loadInitialState(registry: *ecs.Registry) void {
+    var s = Explore.create(registry) catch @panic("error allocating inital state");
+    registry.singletons().add(s.state());
+}
