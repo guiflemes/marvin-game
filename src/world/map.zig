@@ -1,12 +1,11 @@
 const rl = @import("raylib");
-const consts = @import("../core.zig");
-const fonts = @import("../font.zig");
+const core = @import("../core.zig");
 const ecs = @import("ecs");
 
 // 640 pixels
-const MAP_HEIGHT = consts.MAP_HEIGHT;
-const MAP_WIDTH = consts.MAP_HEIGHT;
-const TILE_SIZE = consts.TILE_SIZE;
+const MAP_HEIGHT = core.MAP_HEIGHT;
+const MAP_WIDTH = core.MAP_HEIGHT;
+const TILE_SIZE = core.TILE_SIZE;
 
 pub const MapData: [MAP_HEIGHT][MAP_WIDTH]u8 = .{
     .{ '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#' },
@@ -33,7 +32,7 @@ pub const MapData: [MAP_HEIGHT][MAP_WIDTH]u8 = .{
 
 pub const TileMap = struct {
     data: [MAP_HEIGHT][MAP_WIDTH]u8,
-    font: fonts.Font,
+    font: core.Font,
 
     pub fn isObstacle(self: *TileMap, y: f32, x: f32) bool {
         return self.checkTile('#', @intFromFloat(y), @intFromFloat(x));

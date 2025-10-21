@@ -1,6 +1,5 @@
 const rl = @import("raylib");
 const core = @import("../core.zig");
-const fonts = @import("../font.zig");
 const ecs = @import("ecs");
 const components = @import("../components/components.zig");
 const m = @import("../world/map.zig");

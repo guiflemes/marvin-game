@@ -1,5 +1,5 @@
 const rl = @import("raylib");
-const fonts = @import("../font.zig");
+const core = @import("../core.zig");
 const ecs = @import("ecs");
 
 pub const PlayerTag = struct {};
@@ -27,7 +27,7 @@ pub const Position = struct {
 };
 
 pub const Renderable = struct {
-    font: fonts.Font,
+    font: core.Font,
     text: []const u8,
     color: rl.Color,
 };

@@ -1,7 +1,7 @@
 const std = @import("std");
 const ecs = @import("ecs");
 const components = @import("../components/components.zig");
-const font = @import("../font.zig");
+const core = @import("../core.zig");
 const rl = @import("raylib");
 const map = @import("map.zig");
 
@@ -20,7 +20,7 @@ pub const World = struct {
     }
 
     pub fn load(self: *Self) void {
-        const defaultFont = font.Font.init();
+        const defaultFont = core.Font.init();
         const types_entity = self.registry.create();
 
         self.registry.add(types_entity, components.Position{ .x = 2, .y = 2 });
