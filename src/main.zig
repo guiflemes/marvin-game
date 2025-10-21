@@ -2,10 +2,10 @@ const std = @import("std");
 const marvin_game = @import("marvin_game");
 const rl = @import("raylib");
 const g = @import("game.zig");
-const consts = @import("const.zig");
+const core = @import("core.zig");
 
 pub fn main() !void {
-    rl.initWindow(consts.MAP_WIDTH * consts.TILE_SIZE, consts.MAP_HEIGHT * consts.TILE_SIZE, "marvin game RPG");
+    rl.initWindow(core.MAP_WIDTH * core.TILE_SIZE, core.MAP_HEIGHT * core.TILE_SIZE, "marvin game RPG");
     defer rl.closeWindow();
 
     rl.setTargetFPS(60);

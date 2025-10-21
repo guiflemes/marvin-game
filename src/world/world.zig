@@ -1,7 +1,7 @@
 const std = @import("std");
 const ecs = @import("ecs");
-const types = @import("types.zig");
-const font = @import("font.zig");
+const components = @import("../components/components.zig");
+const font = @import("../font.zig");
 const rl = @import("raylib");
 const map = @import("map.zig");
 
@@ -23,13 +23,13 @@ pub const World = struct {
         const defaultFont = font.Font.init();
         const types_entity = self.registry.create();
 
-        self.registry.add(types_entity, types.Position{ .x = 2, .y = 2 });
-        self.registry.add(types_entity, types.Renderable{
+        self.registry.add(types_entity, components.Position{ .x = 2, .y = 2 });
+        self.registry.add(types_entity, components.Renderable{
             .font = defaultFont,
             .text = "@",
             .color = rl.Color.yellow,
         });
-        self.registry.add(types_entity, types.PlayerTag{});
+        self.registry.add(types_entity, components.PlayerTag{});
 
         self.registry.singletons().add(map.TileMap{
             .data = map.MapData,

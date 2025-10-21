@@ -1,9 +1,8 @@
 const std = @import("std");
 const rl = @import("raylib");
 const ecs = @import("ecs");
-const state = @import("state_manager.zig");
-const systems = @import("systems.zig");
-const world = @import("world.zig");
+const state = @import("./state/manager.zig");
+const world = @import("./world/world.zig");
 const renderer = @import("renderer.zig");
 
 const Allocator = std.mem.Allocator;
@@ -51,8 +50,7 @@ pub const GameRunner = struct {
     }
 
     pub fn update(self: *GameRunner) void {
-        const currentState = self.state_manager.currentState();
-        currentState.update();
+        self.state_manager.update();
     }
 
     pub fn shouldExit(self: *GameRunner) bool {

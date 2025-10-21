@@ -1,6 +1,6 @@
 const rl = @import("raylib");
 const ecs = @import("ecs");
-const systems = @import("systems.zig");
+const systems = @import("./systems/render.zig");
 
 pub const Renderer = struct {
     registry: *ecs.Registry,

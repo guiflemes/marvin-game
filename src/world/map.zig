@@ -1,6 +1,6 @@
 const rl = @import("raylib");
-const consts = @import("const.zig");
-const fonts = @import("font.zig");
+const consts = @import("../core.zig");
+const fonts = @import("../font.zig");
 const ecs = @import("ecs");
 
 // 640 pixels
@@ -24,7 +24,7 @@ pub const MapData: [MAP_HEIGHT][MAP_WIDTH]u8 = .{
     .{ '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#' },
     .{ '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#' },
     .{ '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#' },
-    .{ '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#' },
+    .{ '#', '.', '.', '.', '.', 'M', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#' },
     .{ '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#' },
     .{ '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#' },
     .{ '#', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '.', '#' },
@@ -37,6 +37,10 @@ pub const TileMap = struct {
 
     pub fn isObstacle(self: *TileMap, y: f32, x: f32) bool {
         return self.checkTile('#', @intFromFloat(y), @intFromFloat(x));
+    }
+
+    pub fn isEnemy(self: *TileMap, y: f32, x: f32) bool {
+        return self.checkTile('M', @intFromFloat(y), @intFromFloat(x));
     }
 
     pub fn checkTile(self: *TileMap, tile: u8, y: usize, x: usize) bool {

@@ -1,19 +1,18 @@
 const rl = @import("raylib");
-const consts = @import("const.zig");
-const fonts = @import("font.zig");
+const core = @import("../core.zig");
+const fonts = @import("../font.zig");
 const ecs = @import("ecs");
-const types = @import("types.zig");
-const m = @import("map.zig");
-const state = @import("state.zig");
+const components = @import("../components/components.zig");
+const m = @import("../world/map.zig");
 const std = @import("std");
 
-const MAP_HEIGHT = consts.MAP_HEIGHT;
-const MAP_WIDTH = consts.MAP_HEIGHT;
-const TILE_SIZE = consts.TILE_SIZE;
+const MAP_HEIGHT = core.MAP_HEIGHT;
+const MAP_WIDTH = core.MAP_HEIGHT;
+const TILE_SIZE = core.TILE_SIZE;
 
-const Position = types.Position;
-const Renderable = types.Renderable;
-const PlayerTag = types.PlayerTag;
+const Position = components.Position;
+const Renderable = components.Renderable;
+const PlayerTag = components.PlayerTag;
 
 pub fn PlayerRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
     var view = registry.view(.{ Position, Renderable, PlayerTag }, .{});
@@ -41,33 +40,6 @@ pub fn MapRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
             };
 
             rl.drawTextEx(world.font.raylibFont, rl.textFormat("%c", .{tile}), pos, world.font.size, 0, tileColor);
-        }
-    }
-}
-
-pub fn PlayerMovementWorldSystem(registry: *ecs.Registry) void {
-    var map: *m.TileMap = registry.singletons().get(m.TileMap);
-    // const currentState = registry.singletons().get(state.State);
-    // std.debug.print("currentState: {s}\n", .{currentState.name()});
-
-    var view = registry.view(.{ Position, PlayerTag }, .{});
-    var iter = view.entityIterator();
-    while (iter.next()) |e| {
-        var player = view.get(Position, e);
-        if (rl.isKeyPressed(rl.KeyboardKey.right) and !map.isObstacle(player.y, player.x + 1)) {
-            player.right(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.left) and !map.isObstacle(player.y, player.x - 1)) {
-            player.left(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.down) and !map.isObstacle(player.y + 1, player.x)) {
-            player.down(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.up) and !map.isObstacle(player.y - 1, player.x)) {
-            player.up(1);
         }
     }
 }
