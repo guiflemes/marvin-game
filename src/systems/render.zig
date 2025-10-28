@@ -5,8 +5,6 @@ const components = @import("../components/components.zig");
 const m = @import("../world/map.zig");
 const std = @import("std");
 
-const MAP_HEIGHT = core.MAP_HEIGHT;
-const MAP_WIDTH = core.MAP_HEIGHT;
 const TILE_SIZE = core.TILE_SIZE;
 
 const Position = components.Position;
@@ -28,8 +26,8 @@ pub fn PlayerRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
 pub fn MapRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
     const world = registry.singletons().get(m.TileMap);
 
-    for (0..MAP_HEIGHT) |y| {
-        for (0..MAP_WIDTH) |x| {
+    for (0..world.height) |y| {
+        for (0..world.width) |x| {
             const tile = world.data[y][x];
             const tileColor = getTileColor(tile);
 

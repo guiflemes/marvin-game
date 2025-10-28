@@ -1,6 +1,8 @@
 const rl = @import("raylib");
 const core = @import("../core.zig");
 const ecs = @import("ecs");
+const std = @import("std");
+const Allocator = std.mem.Allocator;
 
 pub const PlayerTag = struct {};
 pub const EnemyTag = struct {};
@@ -39,4 +41,16 @@ pub const Health = struct {
 
 pub const Attack = struct {
     power: i32,
+};
+
+pub const EnemyPool = struct {
+    enemies: std.ArrayList(ecs.Entity),
+
+    pub fn init(allocator: Allocator) EnemyPool {
+        return .{ .enemies = std.ArrayList(ecs.Entity).init(allocator) };
+    }
+
+    pub fn deinit(self: EnemyPool) void {
+        self.enemies.deinit();
+    }
 };

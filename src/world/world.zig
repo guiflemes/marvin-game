@@ -31,14 +31,13 @@ pub const World = struct {
         });
         self.registry.add(types_entity, components.PlayerTag{});
 
-        self.registry.singletons().add(map.TileMap{
-            .data = map.MapData,
-            .font = defaultFont,
-        });
+        const m = map.TileMap.init(self.allocator, map.base[0..], defaultFont) catch @panic("error on map");
+        self.registry.singletons().add(m);
     }
 
     pub fn deinit(self: *Self) void {
-        _ = self;
+        const m = self.registry.singletons().get(map.TileMap);
+        m.deinit();
     }
 
     pub fn destroy(self: *Self) void {

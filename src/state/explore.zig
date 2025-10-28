@@ -3,7 +3,7 @@ const ecs = @import("ecs");
 const std = @import("std");
 const state = @import("state.zig");
 const core = @import("../core.zig");
-const systems = @import("../systems/player_movement.zig");
+const systems = @import("../systems/movement.zig");
 
 const Transition = core.Transition;
 const State = state.State;

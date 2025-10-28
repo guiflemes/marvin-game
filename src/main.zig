@@ -3,6 +3,7 @@ const marvin_game = @import("marvin_game");
 const rl = @import("raylib");
 const g = @import("game.zig");
 const core = @import("core.zig");
+const events = @import("./events/default_queue.zig");
 
 pub fn main() !void {
     rl.initWindow(core.MAP_WIDTH * core.TILE_SIZE, core.MAP_HEIGHT * core.TILE_SIZE, "marvin game RPG");
@@ -11,9 +12,12 @@ pub fn main() !void {
     rl.setTargetFPS(60);
 
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var ev = events.EventQueue.init();
 
     const allocator = gpa.allocator();
-    var game = g.GameRunner.init(allocator);
+    const queue = ev.queue();
+
+    var game = g.GameRunner.init(allocator, queue);
 
     game.startUp();
     defer {

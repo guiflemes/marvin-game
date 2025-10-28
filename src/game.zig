@@ -4,6 +4,7 @@ const ecs = @import("ecs");
 const state = @import("./state/manager.zig");
 const world = @import("./world/world.zig");
 const renderer = @import("renderer.zig");
+const events = @import("./events/queue.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -13,8 +14,9 @@ pub const GameRunner = struct {
     registry: ecs.Registry,
     world: *world.World,
     state_manager: *state.StateManager,
+    eventQueue: events.Queue,
 
-    pub fn init(allocator: Allocator) *GameRunner {
+    pub fn init(allocator: Allocator, eventQueue: events.Queue) *GameRunner {
         var runner = allocator.create(GameRunner) catch @panic("Could not allocate GameRunner");
 
         runner.* = GameRunner{
@@ -23,10 +25,11 @@ pub const GameRunner = struct {
             .world = undefined,
             .state_manager = undefined,
             .renderer = undefined,
+            .eventQueue = eventQueue,
         };
 
         runner.world = world.World.init(&runner.registry);
-        runner.state_manager = state.StateManager.init(&runner.registry);
+        runner.state_manager = state.StateManager.init(&runner.registry, eventQueue);
         runner.renderer = renderer.Renderer.init(&runner.registry);
         return runner;
     }
