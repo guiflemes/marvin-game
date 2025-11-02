@@ -14,9 +14,9 @@ pub const GameRunner = struct {
     registry: ecs.Registry,
     world: *world.World,
     state_manager: *state.StateManager,
-    eventQueue: events.Queue,
+    event_queue: events.Queue,
 
-    pub fn init(allocator: Allocator, eventQueue: events.Queue) *GameRunner {
+    pub fn init(allocator: Allocator, event_queue: events.Queue) *GameRunner {
         var runner = allocator.create(GameRunner) catch @panic("Could not allocate GameRunner");
 
         runner.* = GameRunner{
@@ -25,11 +25,11 @@ pub const GameRunner = struct {
             .world = undefined,
             .state_manager = undefined,
             .renderer = undefined,
-            .eventQueue = eventQueue,
+            .event_queue = event_queue,
         };
 
         runner.world = world.World.init(&runner.registry);
-        runner.state_manager = state.StateManager.init(&runner.registry, eventQueue);
+        runner.state_manager = state.StateManager.init(&runner.registry, event_queue);
         runner.renderer = renderer.Renderer.init(&runner.registry);
         return runner;
     }
