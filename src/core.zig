@@ -10,7 +10,6 @@ pub const Transition = union(enum) {
 
     pub const StateType = enum {
         Explore,
-        Battle,
     };
 };
 

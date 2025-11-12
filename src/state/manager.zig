@@ -3,13 +3,11 @@ const std = @import("std");
 const state = @import("state.zig");
 const core = @import("../core.zig");
 const events = @import("../events/queue.zig");
-const battle = @import("battle.zig");
 const explore = @import("explore.zig");
 
 const Transition = core.Transition;
 const Allocator = std.mem.Allocator;
 const Explore = explore.Explore;
-const Battle = battle.Battle;
 
 pub const StateManager = struct {
     const Self = @This();
@@ -49,7 +47,6 @@ pub const StateManager = struct {
 
         const new_state = switch (transition) {
             .Explore => Explore.createState(self.registry) catch @panic("alloc error"),
-            .Battle => Battle.createState(self.registry) catch @panic("alloc error"),
         };
 
         self.current_state = new_state;

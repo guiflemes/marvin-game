@@ -1,16 +1,19 @@
+const std = @import("std");
 const rl = @import("raylib");
 const core = @import("../core.zig");
 const ecs = @import("ecs");
 const components = @import("../components/components.zig");
-const m = @import("../world/map.zig");
-const std = @import("std");
+const utils = @import("../utils.zig");
+const world = @import("../world/world.zig");
 
 const TILE_SIZE = core.TILE_SIZE;
 
 const Position = components.Position;
 const Renderable = components.Renderable;
 const PlayerTag = components.PlayerTag;
+const GridPosition = components.GridPosition;
 
+// depracated - delete it
 pub fn PlayerRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
     var view = registry.view(.{ Position, Renderable, PlayerTag }, .{});
     var iter = view.entityIterator();
@@ -23,30 +26,24 @@ pub fn PlayerRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
     }
 }
 
-pub fn MapRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
-    const world = registry.singletons().get(m.TileMap);
+pub fn RenderSystem(registry: *ecs.Registry) void {
+    rl.beginDrawing();
+    rl.clearBackground(rl.Color.black);
+    defer rl.endDrawing();
 
-    for (0..world.height) |y| {
-        for (0..world.width) |x| {
-            const tile = world.data[y][x];
-            const tileColor = getTileColor(tile);
+    const origin = rl.Vector2{ .x = 0, .y = 0 };
 
-            const pos = rl.Vector2{
-                .x = origin.x + @as(f32, @floatFromInt(x)) * TILE_SIZE + 8.0,
-                .y = origin.y + @as(f32, @floatFromInt(y)) * TILE_SIZE + 6.0,
-            };
+    var map_manager = registry.singletons().getConst(world.WorldManager);
 
-            rl.drawTextEx(world.font.raylibFont, rl.textFormat("%c", .{tile}), pos, world.font.size, 0, tileColor);
-        }
-    }
-}
+    map_manager.get_active_map().draw(origin);
 
-pub fn getTileColor(tile: u8) rl.Color {
-    switch (tile) {
-        '#' => return rl.Color.gray,
-        '.' => return rl.Color.dark_green,
-        '^' => return rl.Color.brown,
-        '~' => return rl.Color.blue,
-        else => return rl.Color.white,
+    var view = registry.view(.{ GridPosition, Renderable }, .{});
+    var iter = view.entityIterator();
+
+    while (iter.next()) |entt| {
+        const pos = view.getConst(GridPosition, entt);
+        const rend = view.getConst(Renderable, entt);
+        const screenPos = rl.Vector2{ .x = origin.x + pos.x * TILE_SIZE, .y = origin.y + pos.y * TILE_SIZE };
+        rend.render(screenPos);
     }
 }

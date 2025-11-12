@@ -1,47 +1,66 @@
 const std = @import("std");
 const ecs = @import("ecs");
-const components = @import("../components/components.zig");
 const core = @import("../core.zig");
+const tile_map = @import("./tile_map.zig");
+const map_resource = @import("../resources/map_layouts.zig");
+const vtable = @import("vtable.zig");
 const rl = @import("raylib");
-const map = @import("map.zig");
 
-const Allocator = std.mem.Allocator;
+pub const Map = vtable.Map;
 
-pub const World = struct {
-    allocator: Allocator,
+pub const WorldContext = struct {
     registry: *ecs.Registry,
+    allocator: std.mem.Allocator,
+    font: core.Font,
+};
+
+pub const WorldManager = struct {
     const Self = @This();
 
-    pub fn init(registry: *ecs.Registry) *World {
-        const allocator = registry.allocator;
-        const self = allocator.create(World) catch @panic("error allocating World");
-        self.* = .{ .allocator = allocator, .registry = registry };
-        return self;
-    }
+    registry: *ecs.Registry,
+    allocator: std.mem.Allocator,
+    overall_map: vtable.Map,
+    local_map: ?vtable.Map,
+    is_in_local: bool,
+    font: core.Font,
 
-    pub fn load(self: *Self) void {
-        const defaultFont = core.Font.init();
-        const types_entity = self.registry.create();
-
-        self.registry.add(types_entity, components.Position{ .x = 2, .y = 2 });
-        self.registry.add(types_entity, components.Renderable{
-            .font = defaultFont,
-            .text = "@",
-            .color = rl.Color.yellow,
-        });
-        self.registry.add(types_entity, components.PlayerTag{});
-
-        const m = map.TileMap.init(self.allocator, map.base[0..], defaultFont) catch @panic("error on map");
-        self.registry.singletons().add(m);
+    pub fn init(allocator: std.mem.Allocator, registry: *ecs.Registry, font: core.Font) Self {
+        return .{
+            .allocator = allocator,
+            .registry = registry,
+            .is_in_local = false,
+            .overall_map = undefined,
+            .local_map = null,
+            .font = font,
+        };
     }
 
     pub fn deinit(self: *Self) void {
-        const m = self.registry.singletons().get(map.TileMap);
-        m.deinit();
+        self.overall_map.destroy();
+        if (self.local_map) |lm| lm.destroy();
     }
 
-    pub fn destroy(self: *Self) void {
-        self.deinit();
-        self.allocator.destroy(self);
+    pub fn switch_to_local(self: *Self) void {
+        _ = self;
+    }
+
+    pub fn return_to_overall(self: *Self) void {
+        if (self.local_map) |lm| {
+            lm.destroy();
+            self.local_map = null;
+        }
+        self.is_in_local = false;
+    }
+
+    pub fn get_active_map(self: *Self) vtable.Map {
+        return if (self.is_in_local) self.local_map.? else self.overall_map;
     }
 };
+
+pub fn create_world_manager(ctx: WorldContext) void {
+    const layout_leve1 = map_resource.LEVEL1;
+    var tm = tile_map.TileMap.create(ctx.allocator, layout_leve1[0..], ctx.font) catch @panic("error on map");
+    var manager = WorldManager.init(ctx.allocator, ctx.registry, ctx.font);
+    manager.overall_map = tm.map();
+    ctx.registry.singletons().add(manager);
+}

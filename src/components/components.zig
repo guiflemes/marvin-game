@@ -2,55 +2,32 @@ const rl = @import("raylib");
 const core = @import("../core.zig");
 const ecs = @import("ecs");
 const std = @import("std");
+const position = @import("./position.zig");
+const render = @import("./render.zig");
+const combat = @import("./combat.zig");
+
 const Allocator = std.mem.Allocator;
 
+// TAGS
 pub const PlayerTag = struct {};
 pub const EnemyTag = struct {};
+pub const ActiveMapTag = struct {};
 
-pub const Position = struct {
-    x: f32,
-    y: f32,
+// POSITIONS
+pub const Position = position.Position;
+pub const GridPosition = position.GridPosition;
+pub const IntentMovement = position.IntentMovement;
 
-    pub fn up(self: *Position, step: f32) void {
-        self.y -= step;
-    }
+// RENDERS
+pub const Renderable = render.Renderable;
 
-    pub fn down(self: *Position, step: f32) void {
-        self.y += step;
-    }
+// COMBAT
+pub const Attack = combat.Attack;
+pub const Health = combat.Health;
 
-    pub fn left(self: *Position, step: f32) void {
-        self.x -= step;
-    }
+// MAP
 
-    pub fn right(self: *Position, step: f32) void {
-        self.x += step;
-    }
-};
-
-pub const Renderable = struct {
-    font: core.Font,
-    text: []const u8,
-    color: rl.Color,
-};
-
-pub const Health = struct {
-    current: i32,
-    max: i32,
-};
-
-pub const Attack = struct {
-    power: i32,
-};
-
-pub const EnemyPool = struct {
-    enemies: std.ArrayList(ecs.Entity),
-
-    pub fn init(allocator: Allocator) EnemyPool {
-        return .{ .enemies = std.ArrayList(ecs.Entity).init(allocator) };
-    }
-
-    pub fn deinit(self: EnemyPool) void {
-        self.enemies.deinit();
-    }
-};
+pub fn DrawText(pos: rl.Vector2, color: rl.Color, font: core.Font, data: *const anyopaque) void {
+    _ = data;
+    rl.drawTextEx(font.raylibFont, "@", pos, font.size, 0, color);
+}

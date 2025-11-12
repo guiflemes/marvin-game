@@ -28,7 +28,6 @@ pub fn main() !void {
 
     while (!rl.windowShouldClose()) {
         game.update();
-        game.draw();
 
         if (game.shouldExit()) {
             break;
