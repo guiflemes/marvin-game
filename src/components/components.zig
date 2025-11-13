@@ -5,6 +5,7 @@ const std = @import("std");
 const position = @import("./position.zig");
 const render = @import("./render.zig");
 const combat = @import("./combat.zig");
+const control = @import("./control.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -25,7 +26,8 @@ pub const Renderable = render.Renderable;
 pub const Attack = combat.Attack;
 pub const Health = combat.Health;
 
-// MAP
+// CONTROL
+pub const IntentControl = control.IntentControl;
 
 pub fn DrawText(pos: rl.Vector2, color: rl.Color, font: core.Font, data: *const anyopaque) void {
     _ = data;
