@@ -6,30 +6,14 @@ const components = @import("../components/components.zig");
 const utils = @import("../utils.zig");
 const world = @import("../world/world.zig");
 
-const TILE_SIZE = core.TILE_SIZE;
-
-const Position = components.Position;
 const Renderable = components.Renderable;
-const PlayerTag = components.PlayerTag;
 const GridPosition = components.GridPosition;
-
-// TODO depracated - delete it
-pub fn PlayerRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
-    var view = registry.view(.{ Position, Renderable, PlayerTag }, .{});
-    var iter = view.entityIterator();
-    while (iter.next()) |e| {
-        const pos: Position = view.getConst(Position, e);
-        const rend: Renderable = view.getConst(Renderable, e);
-
-        const screenPos = rl.Vector2{ .x = origin.x + pos.x * TILE_SIZE, .y = origin.y + pos.y * TILE_SIZE };
-        rl.drawTextEx(rend.font.raylibFont, "@", screenPos, rend.font.size, 0, rend.color);
-    }
-}
 
 pub const RenderContext = struct {
     registry: *ecs.Registry,
 };
 
+// TODO entities rendering are still depending on tile map, change it
 pub fn RenderSystem(ctx: *const RenderContext) void {
     rl.beginDrawing();
     rl.clearBackground(rl.Color.black);
@@ -47,7 +31,7 @@ pub fn RenderSystem(ctx: *const RenderContext) void {
     while (iter.next()) |entt| {
         const pos = view.getConst(GridPosition, entt);
         const rend = view.getConst(Renderable, entt);
-        const screenPos = rl.Vector2{ .x = origin.x + pos.x * TILE_SIZE, .y = origin.y + pos.y * TILE_SIZE };
+        const screenPos = rl.Vector2{ .x = origin.x + pos.x * core.TILE_SIZE, .y = origin.y + pos.y * core.TILE_SIZE };
         rend.render(screenPos);
     }
 }
