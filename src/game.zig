@@ -2,27 +2,27 @@ const std = @import("std");
 const rl = @import("raylib");
 const ecs = @import("ecs");
 const state = @import("./state/manager.zig");
-const events = @import("./events/queue.zig");
 const systems = @import("./systems/systems.zig");
 const entity = @import("./entities/factory.zig");
 const utils = @import("./utils.zig");
 const world = @import("./world/world.zig");
 const core = @import("./core.zig");
+const Dispatcher = @import("./events/dispatcher.zig").Dispatcher(100);
 
 const Allocator = std.mem.Allocator;
 
 pub const GameRunner = struct {
     allocator: Allocator,
     registry: ecs.Registry,
-    event_queue: events.Queue,
+    dispatcher: *Dispatcher,
 
-    pub fn init(allocator: Allocator, event_queue: events.Queue) *GameRunner {
+    pub fn init(allocator: Allocator, dispatcher: *Dispatcher) *GameRunner {
         var runner = allocator.create(GameRunner) catch @panic("Could not allocate GameRunner");
 
         runner.* = GameRunner{
             .allocator = allocator,
             .registry = ecs.Registry.init(allocator),
-            .event_queue = event_queue,
+            .dispatcher = dispatcher,
         };
 
         const font = core.Font.init();
@@ -53,7 +53,7 @@ pub const GameRunner = struct {
     }
 
     pub fn update(self: *GameRunner) void {
-        systems.update(&self.registry);
+        systems.update(&systems.SystemContext{ .registry = &self.registry, .dispatcher = self.dispatcher });
     }
 
     pub fn shouldExit(self: *GameRunner) bool {

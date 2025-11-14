@@ -20,22 +20,25 @@ pub fn Dispatcher(max_events_size: usize) type {
                 .allocator = allocator,
                 .events = [_]?events.Event{null} ** max_events_size,
                 .handlers = &[_]Handler{},
+                .events_count = 0,
             };
         }
 
-        pub fn registerHandler(self: @This(), event_type: events.Event, callback: callbackFn) void {
+        pub fn registerHandler(self: *@This(), event_type: events.Event, callback: callbackFn) void {
             const handler = Handler{ .event_type = event_type, .callback = callback };
             const new_handlers = self.allocator.alloc(Handler, self.handlers.len + 1) catch unreachable;
             @memcpy(new_handlers, self.handlers);
             new_handlers[new_handlers.len + 1] = handler;
         }
 
-        pub fn emit(self: @This(), event: events.Event) void {
-            self.events[self.events + 1] = event;
-            self.events_count += 1;
+        pub fn emit(self: *@This(), event: events.Event) void {
+            if (self.events_count < max_events_size) {
+                self.events[self.events_count] = event;
+                self.events_count += 1;
+            }
         }
 
-        pub fn dispatchAll(self: @This()) void {
+        pub fn dispatchAll(self: *@This()) void {
             for (self.events[0..self.events_count]) |maybe_ev| {
                 if (maybe_ev) |ev| {
                     if (self.getHandler(ev)) |handler| {
@@ -43,6 +46,7 @@ pub fn Dispatcher(max_events_size: usize) type {
                     }
                 }
             }
+            self.events_count = 0;
         }
 
         fn getHandler(self: @This(), event: events.Event) ?*Handler {

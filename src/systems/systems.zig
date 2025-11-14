@@ -3,11 +3,19 @@ const ecs = @import("ecs");
 const render = @import("./render.zig");
 const input = @import("./input.zig");
 const moviment = @import("./movement.zig");
+const control = @import("./game_control.zig");
+const Dispatcher = @import("../events/dispatcher.zig").Dispatcher;
 
-pub fn update(registry: *ecs.Registry) void {
+pub const SystemContext = struct {
+    registry: *ecs.Registry,
+    dispatcher: *Dispatcher(100),
+};
+
+pub fn update(ctx: *const SystemContext) void {
     const delta = std.time.milliTimestamp();
 
-    input.InputSystem(registry);
-    moviment.MovementSystem(registry, delta);
-    render.RenderSystem(registry);
+    input.InputSystem(ctx.registry);
+    control.GameControlSystem(&control.GameControlContext{ .registry = ctx.registry, .dispatcher = ctx.dispatcher });
+    moviment.MovementSystem(ctx.registry, delta);
+    render.RenderSystem(ctx.registry);
 }

@@ -2,7 +2,6 @@ const ecs = @import("ecs");
 const std = @import("std");
 const state = @import("state.zig");
 const core = @import("../core.zig");
-const events = @import("../events/queue.zig");
 const explore = @import("explore.zig");
 
 const Transition = core.Transition;
@@ -15,16 +14,14 @@ pub const StateManager = struct {
     allocator: Allocator,
     registry: *ecs.Registry,
     current_state: state.State,
-    events: events.Queue,
 
-    pub fn init(registry: *ecs.Registry, eventQueue: events.Queue) *Self {
+    pub fn init(registry: *ecs.Registry) *Self {
         const allocator = registry.allocator;
         const self = allocator.create(Self) catch @panic("error allocating StateManager");
         self.* = .{
             .allocator = allocator,
             .registry = registry,
             .current_state = undefined,
-            .events = eventQueue,
         };
         return self;
     }

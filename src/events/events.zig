@@ -12,4 +12,6 @@ pub const Event = union(enum) {
         entity_a: ecs.Entity,
         entity_b: ?ecs.Entity,
     },
+
+    Exit,
 };

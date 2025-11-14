@@ -13,6 +13,9 @@ pub const EntityContext = struct {
 
 pub fn create_entities(ctx: EntityContext) void {
     create_player(ctx);
+
+    // TODO move that for create singleton func
+    ctx.registry.singletons().add(components.IntentControl{ .exit = false, .pause = false });
 }
 
 pub fn DrawText(pos: rl.Vector2, color: rl.Color, font: core.Font, data: *const anyopaque) void {
