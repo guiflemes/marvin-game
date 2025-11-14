@@ -3,6 +3,7 @@ const events = @import("events.zig");
 
 const callbackFn = *const fn (events.Event) void;
 
+// TODO use a ring buffer :)
 pub fn Dispatcher(max_events_size: usize) type {
     return struct {
         allocator: std.mem.Allocator,

@@ -3,8 +3,12 @@ const components = @import("../components/components.zig");
 const rl = @import("raylib");
 const std = @import("std");
 
-pub fn InputSystem(registry: *ecs.Registry) void {
-    var view = registry.view(.{ components.PlayerTag, components.IntentMovement }, .{});
+pub const InputContext = struct {
+    registry: *ecs.Registry,
+};
+
+pub fn InputSystem(ctx: *const InputContext) void {
+    var view = ctx.registry.view(.{ components.PlayerTag, components.IntentMovement }, .{});
     var iter = view.entityIterator();
 
     while (iter.next()) |entt| {

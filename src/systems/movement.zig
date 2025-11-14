@@ -12,7 +12,38 @@ const GridPosition = components.GridPosition;
 const IntentMoviment = components.IntentMovement;
 const Transition = core.Transition;
 
-// deprecated
+pub const MovementContext = struct {
+    registry: *ecs.Registry,
+    delta: i64,
+};
+
+pub fn MovementSystem(ctx: *const MovementContext) void {
+    var manager = ctx.registry.singletons().getConst(world.WorldManager);
+    const map = manager.get_active_map();
+
+    var view = ctx.registry.view(.{ GridPosition, IntentMoviment }, .{});
+    var iter = view.entityIterator();
+
+    while (iter.next()) |entt| {
+        const pos = view.get(GridPosition, entt);
+        var int = view.get(IntentMoviment, entt);
+
+        if (int.y != 0 or int.x != 0) {
+            const movx = pos.x + int.x;
+            const movy = pos.y + int.y;
+            std.debug.print("moviment to x={d} y={d}", .{ movx, movy });
+
+            if (!map.is_obstacle(movy, movx)) {
+                pos.*.y = movy;
+                pos.*.x = movx;
+            }
+        }
+
+        int.reset();
+    }
+}
+
+// TODO delete
 pub fn PlayerMovementWorldSystem(registry: *ecs.Registry) Transition {
     var map = registry.singletons().get(world.Map);
 
@@ -42,31 +73,4 @@ pub fn PlayerMovementWorldSystem(registry: *ecs.Registry) Transition {
     }
 
     return .none;
-}
-
-pub fn MovementSystem(registry: *ecs.Registry, delta: i64) void {
-    _ = delta;
-    var manager = registry.singletons().getConst(world.WorldManager);
-    const map = manager.get_active_map();
-
-    var view = registry.view(.{ GridPosition, IntentMoviment }, .{});
-    var iter = view.entityIterator();
-
-    while (iter.next()) |entt| {
-        const pos = view.get(GridPosition, entt);
-        var int = view.get(IntentMoviment, entt);
-
-        if (int.y != 0 or int.x != 0) {
-            const movx = pos.x + int.x;
-            const movy = pos.y + int.y;
-            std.debug.print("moviment to x={d} y={d}", .{ movx, movy });
-
-            if (!map.is_obstacle(movy, movx)) {
-                pos.*.y = movy;
-                pos.*.x = movx;
-            }
-        }
-
-        int.reset();
-    }
 }

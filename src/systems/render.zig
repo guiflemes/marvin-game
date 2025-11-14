@@ -13,7 +13,7 @@ const Renderable = components.Renderable;
 const PlayerTag = components.PlayerTag;
 const GridPosition = components.GridPosition;
 
-// depracated - delete it
+// TODO depracated - delete it
 pub fn PlayerRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
     var view = registry.view(.{ Position, Renderable, PlayerTag }, .{});
     var iter = view.entityIterator();
@@ -26,18 +26,22 @@ pub fn PlayerRenderSystem(registry: *ecs.Registry, origin: rl.Vector2) void {
     }
 }
 
-pub fn RenderSystem(registry: *ecs.Registry) void {
+pub const RenderContext = struct {
+    registry: *ecs.Registry,
+};
+
+pub fn RenderSystem(ctx: *const RenderContext) void {
     rl.beginDrawing();
     rl.clearBackground(rl.Color.black);
     defer rl.endDrawing();
 
     const origin = rl.Vector2{ .x = 0, .y = 0 };
 
-    var map_manager = registry.singletons().getConst(world.WorldManager);
+    var map_manager = ctx.registry.singletons().getConst(world.WorldManager);
 
     map_manager.get_active_map().draw(origin);
 
-    var view = registry.view(.{ GridPosition, Renderable }, .{});
+    var view = ctx.registry.view(.{ GridPosition, Renderable }, .{});
     var iter = view.entityIterator();
 
     while (iter.next()) |entt| {
