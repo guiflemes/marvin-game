@@ -42,35 +42,3 @@ pub fn MovementSystem(ctx: *const MovementContext) void {
         int.reset();
     }
 }
-
-// TODO delete
-pub fn PlayerMovementWorldSystem(registry: *ecs.Registry) Transition {
-    var map = registry.singletons().get(world.Map);
-
-    var view = registry.view(.{ Position, PlayerTag }, .{});
-    var iter = view.entityIterator();
-    while (iter.next()) |e| {
-        var player = view.get(Position, e);
-        if (rl.isKeyPressed(rl.KeyboardKey.right) and !map.isObstacle(player.y, player.x + 1)) {
-            player.right(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.left) and !map.isObstacle(player.y, player.x - 1)) {
-            player.left(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.down) and !map.isObstacle(player.y + 1, player.x)) {
-            player.down(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.up) and !map.isObstacle(player.y - 1, player.x)) {
-            player.up(1);
-        }
-
-        if (map.is_obstacle(player.y, player.x)) {
-            return .none;
-        }
-    }
-
-    return .none;
-}
