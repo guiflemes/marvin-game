@@ -4,7 +4,6 @@ const std = @import("std");
 const core = @import("../core.zig");
 const world = @import("../world/world.zig");
 const components = @import("../components/components.zig");
-const utils = @import("../utils.zig");
 
 const Position = components.Position;
 const PlayerTag = components.PlayerTag;

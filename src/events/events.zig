@@ -13,5 +13,5 @@ pub const Event = union(enum) {
         entity_b: ?ecs.Entity,
     },
 
-    Exit,
+    Exit: struct {},
 };

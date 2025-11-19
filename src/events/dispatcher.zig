@@ -43,11 +43,20 @@ pub fn Dispatcher(max_events_size: usize) type {
             for (self.events[0..self.events_count]) |maybe_ev| {
                 if (maybe_ev) |ev| {
                     if (self.getHandler(ev)) |handler| {
-                        handler.callback(ev);
+                        self.dispatch(ev, handler.callback);
                     }
                 }
             }
             self.events_count = 0;
+        }
+
+        pub fn dispatch(self: @This(), ev: events.Event, callback: callbackFn) void {
+            _ = self;
+            switch (ev) {
+                .Exit => callback(ev.Exit),
+                .Attack => callback(ev.Attack),
+                .Collisition => callback(ev.Collisition),
+            }
         }
 
         fn getHandler(self: @This(), event: events.Event) ?*Handler {

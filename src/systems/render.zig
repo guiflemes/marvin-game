@@ -3,7 +3,6 @@ const rl = @import("raylib");
 const core = @import("../core.zig");
 const ecs = @import("ecs");
 const components = @import("../components/components.zig");
-const utils = @import("../utils.zig");
 const world = @import("../world/world.zig");
 
 const Renderable = components.Renderable;
