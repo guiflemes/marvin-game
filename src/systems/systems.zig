@@ -4,11 +4,13 @@ const render = @import("./render.zig");
 const input = @import("./input.zig");
 const movement = @import("./movement.zig");
 const control = @import("./game_control.zig");
-const Dispatcher = @import("../events/dispatcher.zig").Dispatcher;
+const events = @import("../events/events.zig");
+
+const Dispatcher = events.dispatcher.Dispatcher(100);
 
 pub const SystemContext = struct {
     registry: *ecs.Registry,
-    dispatcher: *Dispatcher(100),
+    dispatcher: *Dispatcher,
 };
 
 pub fn update(ctx: *const SystemContext) void {

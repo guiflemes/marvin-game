@@ -2,12 +2,13 @@ const ecs = @import("ecs");
 const components = @import("../components/components.zig");
 const rl = @import("raylib");
 const std = @import("std");
-const Dispatcher = @import("../events/dispatcher.zig").Dispatcher;
 const events = @import("../events/events.zig");
+
+const Dispatcher = events.dispatcher.Dispatcher(100);
 
 pub const GameControlContext = struct {
     registry: *ecs.Registry,
-    dispatcher: *Dispatcher(100),
+    dispatcher: *Dispatcher,
 };
 
 pub fn GameControlSystem(ctx: *const GameControlContext) void {

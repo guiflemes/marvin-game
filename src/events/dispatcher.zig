@@ -1,7 +1,7 @@
 const std = @import("std");
-const events = @import("events.zig");
+const events = @import("./events_types.zig");
 
-const callbackFn = *const fn (events.Event) void;
+const callbackFn = *const fn (*events.Context, events.Event) void;
 
 // TODO use a ring buffer :)
 pub fn Dispatcher(max_events_size: usize) type {
@@ -39,23 +39,23 @@ pub fn Dispatcher(max_events_size: usize) type {
             }
         }
 
-        pub fn dispatchAll(self: *@This()) void {
+        pub fn dispatchAll(self: *@This(), ctx: *events.Context) void {
             for (self.events[0..self.events_count]) |maybe_ev| {
                 if (maybe_ev) |ev| {
                     if (self.getHandler(ev)) |handler| {
-                        self.dispatch(ev, handler.callback);
+                        self.dispatch(ctx, ev, handler.callback);
                     }
                 }
             }
             self.events_count = 0;
         }
 
-        pub fn dispatch(self: @This(), ev: events.Event, callback: callbackFn) void {
+        pub fn dispatch(self: @This(), ctx: *events.Context, ev: events.Event, callback: callbackFn) void {
             _ = self;
             switch (ev) {
-                .Exit => callback(ev.Exit),
-                .Attack => callback(ev.Attack),
-                .Collisition => callback(ev.Collisition),
+                .Exit => callback(ctx, ev.Exit),
+                .Attack => callback(ctx, ev.Attack),
+                .Collisition => callback(ctx, ev.Collisition),
             }
         }
 

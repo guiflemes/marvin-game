@@ -5,9 +5,10 @@ const systems = @import("./systems/systems.zig");
 const entity = @import("./entities/factory.zig");
 const world = @import("./world/world.zig");
 const core = @import("./core.zig");
-const Dispatcher = @import("./events/dispatcher.zig").Dispatcher(100);
+const events = @import("./events/events.zig");
 
 const Allocator = std.mem.Allocator;
+const Dispatcher = events.dispatcher.Dispatcher(100);
 
 pub const State = union(enum) {
     Paused,
