@@ -50,6 +50,8 @@ pub fn Dispatcher(max_events_size: usize) type {
             self.events_count = 0;
         }
 
+        //TODO, callback receives the enum itself, the handlers switch for the payload, check if tis possibel to create a func that handlers
+        //this callback before the callback just like python decorators, skipping the not rigth payload
         pub fn dispatch(self: @This(), ctx: *events.Context, ev: events.Event, callback: callbackFn) void {
             _ = self;
             switch (ev) {
