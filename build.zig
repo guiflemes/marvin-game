@@ -175,4 +175,30 @@ pub fn build(b: *std.Build) void {
     //
     // Lastly, the Zig build system is relatively simple and self-contained,
     // and reading its source code will allow you to master it.
+    //
+    // =====================
+    // SANDBOX
+    // =====================
+
+    const sandbox = b.addExecutable(.{
+        .name = "sandbox",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sandbox.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "marvin_game", .module = mod },
+            },
+        }),
+    });
+
+    sandbox.root_module.addImport("raylib", raylib);
+    sandbox.root_module.addImport("raygui", raygui);
+    sandbox.root_module.addImport("ecs", ecs_mod);
+
+    b.installArtifact(sandbox);
+
+    const run_sandbox_cmd = b.addRunArtifact(sandbox);
+    const run_sandbox = b.step("run-sandbox", "Run the sandbox");
+    run_sandbox.dependOn(&run_sandbox_cmd.step);
 }

@@ -3,6 +3,6 @@ const events = @import("events_types.zig");
 
 pub fn onExit(ctx: *events.Context, ev: events.Event) void {
     _ = ev;
-    _ = ctx;
+    ctx.marvin = false;
     std.debug.print("should exit game", .{});
 }
