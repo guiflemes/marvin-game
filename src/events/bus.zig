@@ -1,11 +1,39 @@
 const std = @import("std");
 const events = @import("./events_types.zig");
 
-pub const Event = struct { id: usize, type_id: std.builtin.TypeId, data: *anyopaque };
+const Event = struct {
+    id: usize,
+    type_id: std.builtin.TypeId,
+    data: *anyopaque,
+
+    pub fn init(data: anytype) Event {
+        const RawT = @TypeOf(data);
+
+        comptime {
+            switch (@typeInfo(RawT)) {
+                .pointer => |p| {
+                    switch (@typeInfo(p.child)) {
+                        .Struct => {},
+                        else => @compileError("event requires a *ptr to a struct"),
+                    }
+                },
+                else => @compileError("use &data, it requires only a *ptr"),
+            }
+        }
+
+        const T = @TypeOf(data).*;
+
+        return .{
+            .id = 1,
+            .type_id = @typeInfo(T),
+            .data = data,
+        };
+    }
+};
 
 const callbackFn = *const fn (*events.Context, *anyopaque) void;
 
-pub fn Dispatcher(max_events_size: usize) type {
+pub fn Bus(max_events_size: usize) type {
     return struct {
         allocator: std.mem.Allocator,
         events: [max_events_size]?Event,
