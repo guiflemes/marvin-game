@@ -1,38 +1,48 @@
 const std = @import("std");
 const events = @import("./events_types.zig");
 
-const callbackFn = *const fn (*events.Context, events.Event) void;
+pub const Event = struct { id: usize, type_id: std.builtin.TypeId, data: *anyopaque };
 
-// TODO use a ring buffer :)
+const callbackFn = *const fn (*events.Context, *anyopaque) void;
+
 pub fn Dispatcher(max_events_size: usize) type {
     return struct {
         allocator: std.mem.Allocator,
-        events: [max_events_size]?events.Event,
+        events: [max_events_size]?Event,
         handlers: []Handler,
         events_count: usize,
 
         pub const Handler = struct {
-            event_type: events.Event,
+            event_type: std.builtin.TypeId,
             callback: callbackFn,
         };
 
         pub fn init(allocator: std.mem.Allocator) @This() {
             return .{
                 .allocator = allocator,
-                .events = [_]?events.Event{null} ** max_events_size,
+                .events = [_]?Event{null} ** max_events_size,
                 .handlers = &[_]Handler{},
                 .events_count = 0,
             };
         }
 
-        pub fn registerHandler(self: *@This(), event_type: events.Event, callback: callbackFn) void {
-            const handler = Handler{ .event_type = event_type, .callback = callback };
+        pub fn registerHandler(self: *@This(), comptime T: type, callback: fn (*events.Context, *T) void) void {
+            const thunk = struct {
+                fn erased(ctx: *events.Context, data: *anyopaque) void {
+                    const typed = @as(*T, @ptrCast(data));
+                    callback(ctx, typed);
+                }
+            }.erased;
+
+            const handler = Handler{ .event_type = @typeInfo(T), .callback = thunk };
             const new_handlers = self.allocator.alloc(Handler, self.handlers.len + 1) catch unreachable;
-            @memcpy(new_handlers, self.handlers);
-            new_handlers[new_handlers.len + 1] = handler;
+            @memcpy(new_handlers[0..self.handlers.len], self.handlers);
+            new_handlers[new_handlers.len - 1] = handler;
+            self.handlers = new_handlers;
         }
 
-        pub fn emit(self: *@This(), event: events.Event) void {
+        pub fn emit(self: *@This(), data: anytype) void {
+            const event = Event.init(data);
             if (self.events_count < max_events_size) {
                 self.events[self.events_count] = event;
                 self.events_count += 1;
@@ -50,20 +60,14 @@ pub fn Dispatcher(max_events_size: usize) type {
             self.events_count = 0;
         }
 
-        //TODO, callback receives the enum itself, the handlers switch for the payload, check if tis possibel to create a func that handlers
-        //this callback before the callback just like python decorators, skipping the not rigth payload
-        pub fn dispatch(self: @This(), ctx: *events.Context, ev: events.Event, callback: callbackFn) void {
+        pub fn dispatch(self: @This(), ctx: *events.Context, ev: Event, callback: callbackFn) void {
             _ = self;
-            switch (ev) {
-                .Exit => callback(ctx, ev.Exit),
-                .Attack => callback(ctx, ev.Attack),
-                .Collisition => callback(ctx, ev.Collisition),
-            }
+            callback(ctx, @ptrCast(ev.data));
         }
 
-        fn getHandler(self: @This(), event: events.Event) ?*Handler {
+        fn getHandler(self: @This(), event: Event) ?*Handler {
             for (self.handlers) |*h| {
-                if (h.event_type == event) {
+                if (h.event_type == event.type_id) {
                     return h;
                 }
             }

@@ -1,5 +1,6 @@
 const std = @import("std");
 const events = @import("./events/events.zig");
+const assert = std.debug.assert;
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -7,12 +8,17 @@ pub fn main() !void {
 
     var ctx = events.Context{ .marvin = true };
 
-    var disp = Dispatcher(100).init(allocator);
-    disp.registerHandler(Coco, onCoco);
+    var disp = EventDispatcher(allocator);
 
     var coco = Coco{ .xixi = false };
-    disp.emit(Event{ .id = 1, .type_id = @typeInfo(Coco), .data = &coco });
+    disp.emit(&coco);
     disp.dispatchAll(&ctx);
+}
+
+pub fn EventDispatcher(allocator: std.mem.Allocator) Dispatcher(100) {
+    var disp = Dispatcher(100).init(allocator);
+    disp.registerHandler(Coco, onCoco);
+    return disp;
 }
 
 pub const Coco = struct { xixi: bool };
@@ -21,7 +27,20 @@ pub fn onCoco(ctx: *events.Context, coco: *Coco) void {
     std.debug.print("executing coco={} xixi={}\n", .{ ctx.marvin, coco.xixi });
 }
 
-pub const Event = struct { id: usize, type_id: std.builtin.TypeId, data: *anyopaque };
+pub const Event = struct {
+    id: usize,
+    type_id: std.builtin.TypeId,
+    data: *anyopaque,
+
+    pub fn init(data: anytype) Event {
+        const T = @TypeOf(data.*);
+        return .{
+            .id = 1,
+            .type_id = @typeInfo(T),
+            .data = data,
+        };
+    }
+};
 
 const callbackFn = *const fn (*events.Context, *anyopaque) void;
 
@@ -61,7 +80,8 @@ pub fn Dispatcher(max_events_size: usize) type {
             self.handlers = new_handlers;
         }
 
-        pub fn emit(self: *@This(), event: Event) void {
+        pub fn emit(self: *@This(), data: anytype) void {
+            const event = Event.init(data);
             if (self.events_count < max_events_size) {
                 self.events[self.events_count] = event;
                 self.events_count += 1;
