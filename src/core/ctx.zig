@@ -13,14 +13,15 @@ pub const GameContext = struct {
     event_bus: *events.EventBus,
     registry: *ecs.Registry,
     state: State,
+    delta: i64,
 };
 
-pub fn makeContextChild(comptime ChildCtx: type, parentCtx: GameContext) type {
+pub fn makeContextChild(comptime ChildCtx: type, parentCtx: *GameContext) ChildCtx {
     var child: ChildCtx = undefined;
 
     inline for (@typeInfo(ChildCtx).@"struct".fields) |f| {
-        if (!@hasField(GameContext, f)) {
-            @compileError("missing field on GameContext: " + f.name);
+        if (!@hasField(GameContext, f.name)) {
+            @compileError(std.fmt.comptimePrint("GameContext missing required field '{s}'", .{f.name}));
         }
         @field(child, f.name) = @field(parentCtx, f.name);
     }

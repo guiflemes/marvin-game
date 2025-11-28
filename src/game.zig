@@ -21,6 +21,7 @@ pub fn run(allocator: std.mem.Allocator) void {
         .event_bus = events.CreateEventBus(allocator),
         .registry = &reg,
         .state = .none,
+        .delta = 0,
     };
 
     const font = core.Font.init();
