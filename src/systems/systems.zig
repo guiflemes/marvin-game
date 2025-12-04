@@ -7,13 +7,13 @@ const control = @import("./game_control.zig");
 const events = @import("../events/events.zig");
 const context = @import("../core/ctx.zig");
 
-const SystemContexts = struct {
+pub const SystemContext = struct {
     input: input.InputContext,
     control: control.GameControlContext,
     movement: movement.MovementContext,
     render: render.RenderContext,
 
-    fn init(ctx: *context.GameContext) @This() {
+    pub fn init(ctx: *context.GameContext) @This() {
         var self: @This() = undefined;
 
         inline for (@typeInfo(@This()).@"struct".fields) |f| {
@@ -24,11 +24,12 @@ const SystemContexts = struct {
     }
 };
 
-pub fn update(ctx: *context.GameContext) void {
-    const system = SystemContexts.init(ctx);
+pub fn update(ctx: *SystemContext) void {
+    input.InputSystem(&ctx.input);
+    control.GameControlSystem(&ctx.control);
+    movement.MovementSystem(&ctx.movement);
+}
 
-    input.InputSystem(&system.input);
-    control.GameControlSystem(&system.control);
-    movement.MovementSystem(&system.movement);
-    render.RenderSystem(&system.render);
+pub fn draw(ctx: *render.RenderContext) void {
+    render.RenderSystem(ctx);
 }

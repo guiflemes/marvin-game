@@ -1,12 +1,16 @@
 const rl = @import("raylib");
-const core = @import("../core.zig");
 const ecs = @import("ecs");
 const std = @import("std");
 const vtable = @import("vtable.zig");
+const f = @import("../core/font.zig");
 
 const Allocator = std.mem.Allocator;
 
 const DrawDelegate = *const fn (map: *TileMap, origin: rl.Vector2) void;
+
+pub const MAP_HEIGHT = 20;
+pub const MAP_WIDTH = 20;
+pub const TILE_SIZE: f32 = 32.0;
 
 fn drawMap(map: *const TileMap, origin: rl.Vector2) void {
     for (0..map.height) |y| {
@@ -15,8 +19,8 @@ fn drawMap(map: *const TileMap, origin: rl.Vector2) void {
             const tileColor = getTileColor(tile);
 
             const pos = rl.Vector2{
-                .x = origin.x + @as(f32, @floatFromInt(x)) * core.TILE_SIZE + 8.0,
-                .y = origin.y + @as(f32, @floatFromInt(y)) * core.TILE_SIZE + 6.0,
+                .x = origin.x + @as(f32, @floatFromInt(x)) * TILE_SIZE + 8.0,
+                .y = origin.y + @as(f32, @floatFromInt(y)) * TILE_SIZE + 6.0,
             };
 
             rl.drawTextEx(map.font.raylibFont, rl.textFormat("%c", .{tile}), pos, map.font.size, 0, tileColor);
@@ -31,16 +35,16 @@ pub const TileMap = struct {
     allocator: Allocator,
     height: usize,
     width: usize,
-    font: core.Font,
+    font: f.Font,
 
-    pub fn create(allocator: Allocator, src: []const []const u8, font: core.Font) !*Self {
+    pub fn create(allocator: Allocator, src: []const []const u8, font: f.Font) !*Self {
         const self = try allocator.create(Self);
         errdefer allocator.destroy(self);
         self.* = try Self.init(allocator, src, font);
         return self;
     }
 
-    pub fn init(allocator: Allocator, src: []const []const u8, font: core.Font) !Self {
+    pub fn init(allocator: Allocator, src: []const []const u8, font: f.Font) !Self {
         const height = src.len;
         const width = src[0].len;
 
@@ -80,9 +84,26 @@ pub const TileMap = struct {
         return self.data[y][x] == tile;
     }
 
-    pub fn draw(context: *const anyopaque, pos: rl.Vector2) void {
+    pub fn draw(context: *const anyopaque, origin: rl.Vector2) void {
         const self: *const Self = @ptrCast(@alignCast(context));
-        drawMap(self, pos);
+        drawMap(self, origin);
+    }
+
+    pub fn world_to_screen(context: *const anyopaque, screnPos: rl.Vector2) rl.Vector2 {
+        const self: *const Self = @ptrCast(@alignCast(context));
+        _ = self;
+        return .{
+            .x = screnPos.x * TILE_SIZE,
+            .y = screnPos.y * TILE_SIZE,
+        };
+    }
+
+    pub fn get_size(context: *const anyopaque) rl.Vector2 {
+        const self: *const Self = @ptrCast(@alignCast(context));
+        return .{
+            .x = @as(f32, @floatFromInt(self.width)) * TILE_SIZE,
+            .y = @as(f32, @floatFromInt(self.height)) * TILE_SIZE,
+        };
     }
 
     pub fn map(self: *Self) vtable.Map {
@@ -90,6 +111,8 @@ pub const TileMap = struct {
             .is_obstacle = isObstacle,
             .destroy = destroy,
             .draw = draw,
+            .world_to_screen = world_to_screen,
+            .get_size = get_size,
         } };
     }
 };

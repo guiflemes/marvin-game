@@ -1,12 +1,14 @@
 const std = @import("std");
 const events = @import("./events/events.zig");
 const assert = std.debug.assert;
+const context = @import("./core/ctx.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
 
-    var ctx = events.Context{ .marvin = true };
+    var game_state: context.State = .none;
+    var ctx = events.Context{ .state = &game_state };
 
     var disp = EventDispatcher(allocator);
 
@@ -24,7 +26,8 @@ pub fn EventDispatcher(allocator: std.mem.Allocator) Dispatcher(100) {
 pub const Coco = struct { xixi: bool };
 
 pub fn onCoco(ctx: *events.Context, coco: *Coco) void {
-    std.debug.print("executing coco={} xixi={}\n", .{ ctx.marvin, coco.xixi });
+    _ = ctx;
+    std.debug.print("executing coco={}\n", .{coco.xixi});
 }
 
 pub const Event = struct {

@@ -9,16 +9,13 @@ pub const GameControlContext = struct {
     event_bus: *events.EventBus,
 };
 
-pub fn createCtx(ctx: *context.GameContext) *GameControlContext {
-    const child = context.makeContextChild(GameControlContext, ctx);
-    return &child;
-}
-
-pub fn GameControlSystem(ctx: *const GameControlContext) void {
+pub fn GameControlSystem(ctx: *GameControlContext) void {
     const intent = ctx.registry.singletons().get(components.IntentControl);
 
     if (intent.exit) {
-        // ctx.event_bus.emit(.Exit);
+        std.debug.print("Game Exit\n", .{});
+        var exit = events.Exit{};
+        ctx.event_bus.emit(&exit);
     }
 
     if (intent.pause) {

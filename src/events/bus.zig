@@ -4,6 +4,7 @@ const events = @import("./events_types.zig");
 const Event = struct {
     id: usize,
     type_id: std.builtin.TypeId,
+    type_name: []const u8,
     data: *anyopaque,
 
     pub fn init(data: anytype) Event {
@@ -13,7 +14,7 @@ const Event = struct {
             switch (@typeInfo(RawT)) {
                 .pointer => |p| {
                     switch (@typeInfo(p.child)) {
-                        .Struct => {},
+                        .@"struct" => {},
                         else => @compileError("event requires a *ptr to a struct"),
                     }
                 },
@@ -21,11 +22,12 @@ const Event = struct {
             }
         }
 
-        const T = @TypeOf(data).*;
+        const T = @TypeOf(data.*);
 
         return .{
             .id = 1,
             .type_id = @typeInfo(T),
+            .type_name = @typeName(T),
             .data = data,
         };
     }
@@ -33,6 +35,7 @@ const Event = struct {
 
 const callbackFn = *const fn (*events.Context, *anyopaque) void;
 
+// TODO use a ring buffer
 pub fn Bus(max_events_size: usize) type {
     return struct {
         allocator: std.mem.Allocator,
@@ -52,6 +55,10 @@ pub fn Bus(max_events_size: usize) type {
                 .handlers = &[_]Handler{},
                 .events_count = 0,
             };
+        }
+
+        pub fn deinit(self: @This()) void {
+            self.allocator.free(self.handlers);
         }
 
         pub fn registerHandler(self: *@This(), comptime T: type, callback: fn (*events.Context, *T) void) void {
@@ -82,7 +89,9 @@ pub fn Bus(max_events_size: usize) type {
                 if (maybe_ev) |ev| {
                     if (self.getHandler(ev)) |handler| {
                         self.dispatch(ctx, ev, handler.callback);
+                        continue;
                     }
+                    std.debug.print("Unhandled event (type_id = {s})\n", .{ev.type_name});
                 }
             }
             self.events_count = 0;

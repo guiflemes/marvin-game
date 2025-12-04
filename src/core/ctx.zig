@@ -1,6 +1,7 @@
 const std = @import("std");
 const ecs = @import("ecs");
 const events = @import("../events/events.zig");
+const font = @import("../core/font.zig");
 
 pub const State = union(enum) {
     Paused,
@@ -14,6 +15,7 @@ pub const GameContext = struct {
     registry: *ecs.Registry,
     state: State,
     delta: i64,
+    font: font.Font,
 };
 
 pub fn makeContextChild(comptime ChildCtx: type, parentCtx: *GameContext) ChildCtx {

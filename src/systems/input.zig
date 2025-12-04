@@ -7,7 +7,7 @@ pub const InputContext = struct {
     registry: *ecs.Registry,
 };
 
-pub fn InputSystem(ctx: *const InputContext) void {
+pub fn InputSystem(ctx: *InputContext) void {
     var view = ctx.registry.view(.{ components.PlayerTag, components.IntentMovement }, .{});
     var iter = view.entityIterator();
 
@@ -15,20 +15,12 @@ pub fn InputSystem(ctx: *const InputContext) void {
         var intent = view.get(components.IntentMovement, entt);
         intent.reset();
 
-        if (rl.isKeyPressed(rl.KeyboardKey.right)) {
-            intent.right(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.left)) {
-            intent.left(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.down)) {
-            intent.down(1);
-        }
-
-        if (rl.isKeyPressed(rl.KeyboardKey.up)) {
-            intent.up(1);
-        }
+        if (rl.isKeyPressed(rl.KeyboardKey.right)) intent.right(1);
+        if (rl.isKeyPressed(rl.KeyboardKey.left)) intent.left(1);
+        if (rl.isKeyPressed(rl.KeyboardKey.down)) intent.down(1);
+        if (rl.isKeyPressed(rl.KeyboardKey.up)) intent.up(1);
     }
+
+    var control_intent = ctx.registry.singletons().get(components.IntentControl);
+    if (rl.isKeyPressed(rl.KeyboardKey.escape)) control_intent.exit = true;
 }

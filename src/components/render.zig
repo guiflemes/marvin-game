@@ -1,10 +1,10 @@
 const rl = @import("raylib");
-const core = @import("../core.zig");
+const f = @import("../core/font.zig");
 
-const RenderableDelegate = *const fn (pos: rl.Vector2, color: rl.Color, font: core.Font, data: *const anyopaque) void;
+const RenderableDelegate = *const fn (pos: rl.Vector2, color: rl.Color, font: f.Font, data: *const anyopaque) void;
 
 pub const Renderable = struct {
-    font: core.Font,
+    font: f.Font,
     color: rl.Color,
     draw_func: RenderableDelegate,
     draw_data: *const anyopaque,
